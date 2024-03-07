@@ -1,0 +1,268 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2021-09-09/uiFormDefinition.schema.json",
+  "view": {
+    "kind": "Form",
+    "properties": {
+      "title": "Create a new Azure resource",
+      "steps": [
+        {
+          "name": "basics",
+          "label": "Basics",
+          "elements": [
+            {
+              "name": "introSection",
+              "type": "Microsoft.Common.Section",
+              "label": "Intro",
+              "elements": [
+                {
+                  "name": "introTextBlock",
+                  "type": "Microsoft.Common.TextBlock",
+                  "visible": true,
+                  "options": {
+                    "text": "This is a playground for useful Blades."
+                  }
+                }
+              ]
+            },
+            {
+              "name": "resourceScope",
+              "type": "Microsoft.Common.ResourceScope"
+            }
+          ]
+        },
+        {
+          "name": "entraId",
+          "label": "Entra ID",
+          "elements": [
+            {
+              "name": "objectPickerSection",
+              "type": "Microsoft.Common.Section",
+              "label": "Secret selection",
+              "elements": [
+                {
+                  "name": "objectPickerBlade",
+                  "type": "Microsoft.Solutions.BladeInvokeControl",
+                  "openBladeStatus": "[steps('entraId').objectPickerSection.certificateSelector.changing]",
+                  "bladeReference": {
+                    "name": "ObjectPickerBlade",
+                    "extension": "Microsoft_AAD_IAM",
+                    "parameters": {
+                      "queries": 1,
+                      "disablers": 128,
+                      "bladeSubtitle": "I can pick way more than just users 🍭",
+                      "additionalQueriesOnSearch": 4,
+                      "advancedQueryOptions": {
+                        "suggestedObjectsOptions": {}
+                      },
+                      "selectionMaximum": 1,
+                      "selectionMinimum": 1,
+                      "bladeTitle": "🚪𝒲𝑒𝓁𝒸𝑜𝓂𝑒 𝓉𝑜 𝓉𝒽𝑒 𝐸𝓃𝓉𝓇𝒶 𝐼𝒟 𝒪𝒷𝒿𝑒𝒸𝓉 𝓅𝒾𝒸𝓀𝑒𝓇",
+                      "informationHeader": {
+                        "informationText": "Some very useful info",
+                        "informationLink": "https://example.com"
+                      },
+                      "inviteEnabled": true,
+                      "searchBoxLabel": "Search for an object",
+                      "searchBoxPlaceHolderText": "Now, type in the name or identifier of the object you're looking for",
+                      "searchBoxTooltip": "This is the tooltip",
+                      "searchGridNoRowsMessage": "Oops, no objects found",
+                      "selectButtonText": "Go!",
+                      "selectedGridLabel": "Select grid label",
+                      "selectedGridNoRowsMessage": "❗⚠️❗I am telling you, there are no objects here",
+                      "suggestedObjectsOptions": {
+                        "searchBoxLabel": "Suggested objects"
+                      }
+                    },
+                    "inFullScreen": false
+                  },
+                  "transforms": {
+                    "selection": "selectedObjects|[0].{displayName:displayName, id:id}"
+                  }
+                },
+                {
+                  "name": "certificateSelector",
+                  "type": "Microsoft.Common.Selector",
+                  "label": "Object",
+                  "keyPath": "displayName",
+                  "descriptionKeyPath": "id",
+                  "value": "[steps('entraId').objectPickerSection.objectPickerBlade.transformed.selection]",
+                  "visible": true,
+                  "barColor": "[if(contains(steps('entraId').objectPickerSection.objectPickerBlade.transformed, 'selection'), '#7fba00', '#FF0000')]",
+                  "constraints": {
+                    "required": true
+                  },
+                  "link": "Select an object"
+                },
+                {
+                  "name": "secretPickerDebug",
+                  "type": "Microsoft.Common.TextBlock",
+                  "visible": "[not(empty(steps('entraId').objectPickerSection.objectPickerBlade))]",
+                  "options": {
+                    "text": "[string(steps('entraId').objectPickerSection.objectPickerBlade)]"
+                  }
+                },
+                {
+                  "name": "secretPickerDebug1",
+                  "type": "Microsoft.Common.TextBlock",
+                  "visible": "[not(empty(steps('entraId').objectPickerSection.objectPickerBlade))]",
+                  "options": {
+                    "text": "[string(steps('entraId').objectPickerSection.objectPickerBlade.transformed.selection)]"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "keyVault",
+          "label": "Key Vault",
+          "elements": [
+            {
+              "name": "keySection",
+              "type": "Microsoft.Common.Section",
+              "label": "Key selection",
+              "elements": [
+                {
+                  "name": "keyPickerBlade",
+                  "type": "Microsoft.Solutions.BladeInvokeControl",
+                  "openBladeStatus": "[steps('keyVault').keySection.keySelector.changing]",
+                  "bladeReference": {
+                    "name": "KeyPickerV2ViewModel",
+                    "extension": "Microsoft_Azure_KeyVault",
+                    "parameters": {
+                      "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]",
+                      "showSubscriptionDropdown": true,
+                      "showCreateNew": false,
+                      "keyAndVersionDropdownOptional": false,
+                      "showVersionPicker": true,
+                      "supportAlwaysUseCurrentKeyVersion": true
+                    },
+                    "inFullScreen": false
+                  }
+                },
+                {
+                  "name": "keySelector",
+                  "type": "Microsoft.Common.Selector",
+                  "label": "Key",
+                  "keyPath": "keyId",
+                  "value": "[steps('keyVault').keySection.keyPickerBlade]",
+                  "visible": true,
+                  "barColor": "[if(empty(steps('keyVault').keySection.keyPickerBlade), '#FF0000', '#7fba00')]",
+                  "constraints": {
+                    "required": true
+                  },
+                  "link": "Select a key"
+                },
+                {
+                  "name": "keyPickerDebug",
+                  "type": "Microsoft.Common.TextBlock",
+                  "visible": "[not(empty(steps('keyVault').keySection.keyPickerBlade))]",
+                  "options": {
+                    "text": "[string(steps('keyVault').keySection.keyPickerBlade)]"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "secretSection",
+              "type": "Microsoft.Common.Section",
+              "label": "Secret selection",
+              "elements": [
+                {
+                  "name": "secretPickerBlade",
+                  "type": "Microsoft.Solutions.BladeInvokeControl",
+                  "openBladeStatus": "[steps('keyVault').secretSection.secretSelector.changing]",
+                  "bladeReference": {
+                    "name": "SecretPickerV2ViewModel",
+                    "extension": "Microsoft_Azure_KeyVault",
+                    "parameters": {
+                      "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]",
+                      "showSubscriptionDropdown": true,
+                      "showCreateNew": false,
+                      "showVersionPicker": true
+                    },
+                    "inFullScreen": false
+                  }
+                },
+                {
+                  "name": "secretSelector",
+                  "type": "Microsoft.Common.Selector",
+                  "label": "Secret",
+                  "keyPath": "secretId",
+                  "value": "[steps('keyVault').secretSection.secretPickerBlade]",
+                  "visible": true,
+                  "barColor": "[if(empty(steps('keyVault').secretSection.secretPickerBlade), '#FF0000', '#7fba00')]",
+                  "constraints": {
+                    "required": true
+                  },
+                  "link": "Select a secret"
+                },
+                {
+                  "name": "secretPickerDebug",
+                  "type": "Microsoft.Common.TextBlock",
+                  "visible": "[not(empty(steps('keyVault').secretSection.secretPickerBlade))]",
+                  "options": {
+                    "text": "[string(steps('keyVault').secretSection.secretPickerBlade)]"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "certificateSection",
+              "type": "Microsoft.Common.Section",
+              "label": "Secret selection",
+              "elements": [
+                {
+                  "name": "certificatePickerBlade",
+                  "type": "Microsoft.Solutions.BladeInvokeControl",
+                  "openBladeStatus": "[steps('keyVault').certificateSection.certificateSelector.changing]",
+                  "bladeReference": {
+                    "name": "CertPickerV2ViewModel",
+                    "extension": "Microsoft_Azure_KeyVault",
+                    "parameters": {
+                      "subscriptionId": "[steps('basics').resourceScope.subscription.subscriptionId]",
+                      "showSubscriptionDropdown": true,
+                      "showCreateNew": false,
+                      "showVersionPicker": false
+                    },
+                    "inFullScreen": false
+                  }
+                },
+                {
+                  "name": "certificateSelector",
+                  "type": "Microsoft.Common.Selector",
+                  "label": "Certificate",
+                  "keyPath": "certId",
+                  "value": "[steps('keyVault').certificateSection.certificatePickerBlade]",
+                  "visible": true,
+                  "barColor": "[if(empty(steps('keyVault').certificateSection.certificatePickerBlade), '#FF0000', '#7fba00')]",
+                  "constraints": {
+                    "required": true
+                  },
+                  "link": "Select a certificate"
+                },
+                {
+                  "name": "secretPickerDebug",
+                  "type": "Microsoft.Common.TextBlock",
+                  "visible": "[not(empty(steps('keyVault').certificateSection.certificatePickerBlade))]",
+                  "options": {
+                    "text": "[string(steps('keyVault').certificateSection.certificatePickerBlade)]"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "outputs": {
+      "parameters": {
+        "keyVaultResourceId": "[steps('keyVault').keySection.keyPickerBlade.vaultResourceId]",
+        "keySelectorName": "[last(split(steps('keyVault').keySection.keyPickerBlade.keyId, '/'))]"
+      },
+      "kind": "ResourceGroup",
+      "location": "[steps('basics').resourceScope.location.name]",
+      "resourceGroupId": "[steps('basics').resourceScope.resourceGroup.id]"
+    }
+  }
+}
