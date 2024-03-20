@@ -56,7 +56,7 @@
                       },
                       "selectionMaximum": 1,
                       "selectionMinimum": 1,
-                      "bladeTitle": "🚪𝒲𝑒𝓁𝒸𝑜𝓂𝑒 𝓉𝑜 𝓉𝒽𝑒 𝐸𝓃𝓉𝓇𝒶 𝐼𝒟 𝒪𝒷𝒿𝑒𝒸𝓉 𝓅𝒾𝒸𝓀𝑒𝓇",
+                      "bladeTitle": "This is the object picker title",
                       "informationHeader": {
                         "informationText": "Some very useful info",
                         "informationLink": "https://example.com"
