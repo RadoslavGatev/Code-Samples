@@ -13,11 +13,12 @@ internal static class StringExtensions
         return (T?)xmlSerializer.Deserialize(reader);
     }
 
-    public static string ComputeHMACSHA256(this string message, string userDelegationKeyValue)
+    public static string ComputeHMACSHA256(this string message, string key)
     {
-        return Convert.ToBase64String(
-                    new HMACSHA256(
-                        Convert.FromBase64String(userDelegationKeyValue))
-                    .ComputeHash(Encoding.UTF8.GetBytes(message)));
+        var keyAsBinary = Convert.FromBase64String(key);
+        using var hmacSha256 = new HMACSHA256(keyAsBinary);
+        var signatureHash = hmacSha256.ComputeHash(Encoding.UTF8.GetBytes(message));
+        var signatureAsBase64 = Convert.ToBase64String(signatureHash);
+        return signatureAsBase64;
     }
 }

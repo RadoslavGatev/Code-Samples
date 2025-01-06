@@ -11,17 +11,17 @@ var container = "mycontainer";
 var blob = "mydocument.pdf";
 
 
-string blobEndpoint = $"https://{accountName}.blob.core.windows.net";
+var blobEndpoint = $"https://{accountName}.blob.core.windows.net";
 
-//var issuer = CreateSdkSasIssuer();
-var issuer = CreateSasIssuerFromScratch();
-var delegationSas = await issuer.RequestUserDelegationKeyAsync(24);
+//var service = CreateAzureSdkSasService();
+var service = CreateCustomSasService();
+var delegationSas = await service.GetUserDelegationKeyAsync(24);
+var sasUri = service.CreateUserDelegationSASForBlob(container, blob, 1, delegationSas);
 
 var sasUri = issuer.CreateUserDelegationSASBlob(container, blob, 1, delegationSas);
 Console.WriteLine(sasUri);
 
-
-IUserDelegationSasIssuer CreateSdkSasIssuer()
+IUserDelegationSasService CreateAzureSdkSasService()
 {
     var azCredential = new ClientSecretCredential(tenantId, clientId, clientSecret);
 
@@ -29,12 +29,12 @@ IUserDelegationSasIssuer CreateSdkSasIssuer()
     BlobServiceClient blobServiceClient = new BlobServiceClient(
         new Uri(blobEndpoint),
         azCredential);
-    var issuer = new UserDelegationSDKIssuer(blobServiceClient);
+    var service = new AzureSdkUserDelegationSasService(blobServiceClient);
 
-    return issuer;
+    return service;
 }
 
-IUserDelegationSasIssuer CreateSasIssuerFromScratch()
+IUserDelegationSasService CreateCustomSasService()
 {
-    return new UserDelegationFromScratch(tenantId, clientId, clientSecret, blobEndpoint);
+    return new CustomUserDelegationSasService(tenantId, clientId, clientSecret, blobEndpoint);
 }

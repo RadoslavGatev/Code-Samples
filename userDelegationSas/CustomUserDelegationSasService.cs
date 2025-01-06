@@ -5,14 +5,14 @@ using System.Web;
 
 namespace UserDelegationSAS;
 
-internal class UserDelegationFromScratch(string tenantId, string clientId, string clientSecret, string storageServiceUri) : IUserDelegationSasIssuer
+internal class CustomUserDelegationSasService(string tenantId, string clientId, string clientSecret, string storageServiceUri) : IUserDelegationSasService
 {
     private string _tenantId { get; } = tenantId;
     private string _clientId { get; } = clientId;
     private string _clientSecret { get; } = clientSecret;
     private string _storageServiceUri { get; } = storageServiceUri;
 
-    public async Task<UserDelegationKey> RequestUserDelegationKeyAsync(double hours, CancellationToken cancellationToken)
+    public async Task<UserDelegationKey> GetUserDelegationKeyAsync(double hours, CancellationToken cancellationToken)
     {
         using var httpClient = new HttpClient();
         var authToken = await GetAuthToken(httpClient, cancellationToken);
@@ -20,7 +20,7 @@ internal class UserDelegationFromScratch(string tenantId, string clientId, strin
         return userDelegationKey;
     }
 
-    public Uri CreateUserDelegationSASBlob(string blobContainerName, string blobName, double validityInHours,
+    public Uri CreateUserDelegationSASForBlob(string blobContainerName, string blobName, double validityInHours,
         UserDelegationKey userDelegationKey)
     {
         var storageAccountEndpointUri = new Uri(_storageServiceUri);
@@ -41,10 +41,12 @@ internal class UserDelegationFromScratch(string tenantId, string clientId, strin
             userDelegationKey.SignedStartsOn.ToString("s") + 'Z' + "\n" +
             userDelegationKey.SignedExpiresOn.ToString("s") + 'Z' + "\n" +
             userDelegationKey.SignedService + "\n" +
-            userDelegationKey.SignedVersion + "\n\n\n\n\n" +
+            userDelegationKey.SignedVersion + "\n" +
+            "\n\n\n\n" +
             "https" + "\n" +
             "2023-01-03" + "\n" +
-            "b" + "\n\n\n\n\n\n\n";
+            "b" + "\n" +
+            "\n\n\n\n\n\n";
 
         string signature = stringToSign.ComputeHMACSHA256(userDelegationKey.Value);
         string signatureUrlEncoded = HttpUtility.UrlEncode(signature);
@@ -98,7 +100,11 @@ internal class UserDelegationFromScratch(string tenantId, string clientId, strin
         var xmlResponse = await delegationKeyResponse.Content.ReadAsStringAsync(cancellationToken);
 
         var result = xmlResponse.FromXml<UserDelegationKey>();
-        return result is null ? throw new InvalidOperationException("Failed to deserialize the UserDelegationKey. It is null.") : result;
+        if (result is null)
+        {
+            throw new InvalidOperationException("Failed to deserialize the UserDelegationKey. It is null.");
+        }
+        return result;
     }
 
     private async Task<string> GetAuthToken(HttpClient httpClient, CancellationToken cancellationToken)

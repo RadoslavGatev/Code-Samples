@@ -3,16 +3,16 @@ using Azure.Storage.Sas;
 
 namespace UserDelegationSAS;
 
-internal class UserDelegationSDKIssuer : IUserDelegationSasIssuer
+internal class AzureSdkUserDelegationSasService : IUserDelegationSasService
 {
     private BlobServiceClient _blobServiceClient { get; set; }
 
-    public UserDelegationSDKIssuer(BlobServiceClient blobServiceClient)
+    public AzureSdkUserDelegationSasService(BlobServiceClient blobServiceClient)
     {
         _blobServiceClient = blobServiceClient;
     }
 
-    public async Task<UserDelegationKey> RequestUserDelegationKeyAsync(double hours, CancellationToken cancellationToken)
+    public async Task<UserDelegationKey> GetUserDelegationKeyAsync(double hours, CancellationToken cancellationToken)
     {
         var utcNow = DateTimeOffset.UtcNow;
 
@@ -23,7 +23,7 @@ internal class UserDelegationSDKIssuer : IUserDelegationSasIssuer
         return new UserDelegationKey(userDelegationKey);
     }
 
-    public Uri CreateUserDelegationSASBlob(
+    public Uri CreateUserDelegationSASForBlob(
         string blobContainerName,
         string blobName,
         double validityInHours,
