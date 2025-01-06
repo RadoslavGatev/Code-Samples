@@ -17,7 +17,6 @@ var service = CreateCustomSasService();
 var delegationSas = await service.GetUserDelegationKeyAsync(24);
 var sasUri = service.CreateUserDelegationSASForBlob(container, blob, 1, delegationSas);
 
-var sasUri = issuer.CreateUserDelegationSASBlob(container, blob, 1, delegationSas);
 Console.WriteLine(sasUri);
 
 IUserDelegationSasService CreateAzureSdkSasService()
