@@ -10,7 +10,6 @@ var accountName = "<yourstorageaccount>";
 var container = "mycontainer";
 var blob = "mydocument.pdf";
 
-
 var blobEndpoint = $"https://{accountName}.blob.core.windows.net";
 
 //var service = CreateAzureSdkSasService();
