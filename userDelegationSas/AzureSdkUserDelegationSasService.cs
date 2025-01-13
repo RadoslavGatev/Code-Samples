@@ -34,17 +34,14 @@ internal class AzureSdkUserDelegationSasService : IUserDelegationSasService
         .GetBlobClient(blobName);
 
         var utcNow = DateTimeOffset.UtcNow;
-        var sasBuilder = new BlobSasBuilder()
+        var sasPermissions = BlobSasPermissions.Read | BlobSasPermissions.Write;
+        var sasBuilder = new BlobSasBuilder(sasPermissions, utcNow.AddHours(validityInHours))
         {
             BlobContainerName = blobClient.BlobContainerName,
             BlobName = blobClient.Name,
             Resource = "b",
             StartsOn = utcNow,
-            ExpiresOn = utcNow.AddHours(validityInHours)
         };
-
-        // Specify the necessary permissions
-        sasBuilder.SetPermissions(BlobSasPermissions.Read | BlobSasPermissions.Write);
 
         // Add the SAS token to the blob URI
         var uriBuilder = new BlobUriBuilder(blobClient.Uri)
