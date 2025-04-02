@@ -80,51 +80,51 @@ internal class CustomUserDelegationSasService(string tenantId, string clientId, 
     private async Task<UserDelegationKey> GetUserDelegationKeyInternal(HttpClient httpClient,
         string authToken, double hours, CancellationToken cancellationToken)
     {
-        var delegationUriBuilder = new UriBuilder(_storageServiceUri)
-        {
-            Scheme = Uri.UriSchemeHttps,
-            Port = -1, // default port for scheme
-            Query = "restype=service&comp=userdelegationkey&timeout=30"
-        };
-        using var delegationKeyRequest = new HttpRequestMessage(HttpMethod.Post, delegationUriBuilder.Uri.ToString());
-        delegationKeyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-        delegationKeyRequest.Headers.Add("x-ms-version", "2023-01-03");
+    var delegationUriBuilder = new UriBuilder(_storageServiceUri)
+    {
+        Scheme = Uri.UriSchemeHttps,
+        Port = -1, // default port for scheme
+        Query = "restype=service&comp=userdelegationkey&timeout=30"
+    };
+    using var delegationKeyRequest = new HttpRequestMessage(HttpMethod.Post, delegationUriBuilder.Uri.ToString());
+    delegationKeyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+    delegationKeyRequest.Headers.Add("x-ms-version", "2023-01-03");
 
-        var startTime = DateTimeOffset.UtcNow;
-        var endTime = startTime.AddHours(hours);
-        var payload = $"<KeyInfo><Start>{startTime.ToString("s")}Z</Start><Expiry>{endTime.ToString("s")}Z</Expiry></KeyInfo>";
-        var payloadContent = new StringContent(payload, Encoding.UTF8, "application/xml");
-        delegationKeyRequest.Content = payloadContent;
+    var startTime = DateTimeOffset.UtcNow;
+    var endTime = startTime.AddHours(hours);
+    var payload = $"<KeyInfo><Start>{startTime.ToString("s")}Z</Start><Expiry>{endTime.ToString("s")}Z</Expiry></KeyInfo>";
+    var payloadContent = new StringContent(payload, Encoding.UTF8, "application/xml");
+    delegationKeyRequest.Content = payloadContent;
 
-        using var delegationKeyResponse = await httpClient.SendAsync(delegationKeyRequest, cancellationToken);
-        var xmlResponse = await delegationKeyResponse.Content.ReadAsStringAsync(cancellationToken);
+    using var delegationKeyResponse = await httpClient.SendAsync(delegationKeyRequest, cancellationToken);
+    var xmlResponse = await delegationKeyResponse.Content.ReadAsStringAsync(cancellationToken);
 
-        var result = xmlResponse.FromXml<UserDelegationKey>();
-        if (result is null)
+    var userDelegationKey = xmlResponse.FromXml<UserDelegationKey>();
+        if (userDelegationKey is null)
         {
             throw new InvalidOperationException("Failed to deserialize the UserDelegationKey. It is null.");
         }
-        return result;
+        return userDelegationKey;
     }
 
     private async Task<string> GetAuthToken(HttpClient httpClient, CancellationToken cancellationToken)
     {
-        var tokenEndpoint = $"https://login.microsoftonline.com/{_tenantId}/oauth2/v2.0/token";
-        using var aadTokenRequest = new HttpRequestMessage(HttpMethod.Post, tokenEndpoint);
-        var form = new Dictionary<string, string>
-        {
-            {"grant_type", "client_credentials"},
-            {"client_id", _clientId},
-            {"client_secret", _clientSecret},
-            {"scope", "https://storage.azure.com/.default"}
-        };
-        aadTokenRequest.Content = new FormUrlEncodedContent(form);
+var tokenEndpoint = $"https://login.microsoftonline.com/{_tenantId}/oauth2/v2.0/token";
+using var aadTokenRequest = new HttpRequestMessage(HttpMethod.Post, tokenEndpoint);
+var form = new Dictionary<string, string>
+{
+    {"grant_type", "client_credentials"},
+    {"client_id", _clientId},
+    {"client_secret", _clientSecret},
+    {"scope", "https://storage.azure.com/.default"}
+};
+aadTokenRequest.Content = new FormUrlEncodedContent(form);
 
-        var response = await httpClient.SendAsync(aadTokenRequest, cancellationToken);
-        using var jsonContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+var response = await httpClient.SendAsync(aadTokenRequest, cancellationToken);
+using var jsonContent = await response.Content.ReadAsStreamAsync(cancellationToken);
 
-        var parsedJson = await JsonDocument.ParseAsync(jsonContent, cancellationToken: cancellationToken);
-        var accessToken = parsedJson.RootElement.GetProperty("access_token").GetString();
+var parsedJson = await JsonDocument.ParseAsync(jsonContent, cancellationToken: cancellationToken);
+var accessToken = parsedJson.RootElement.GetProperty("access_token").GetString();
         if (accessToken is null)
         {
             throw new InvalidOperationException("Failed to get the access token.");
