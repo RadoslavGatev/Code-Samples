@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="01-GettingStarted/01-GettingStarted.csproj" />
+  <Project Path="02-Tools/02-Tools.csproj" Id="66ba2538-508e-4928-9d91-9da019d3c3b0" />
+  <Project Path="03-AgentSession/03-AgentSession.csproj" Id="3a6c7ec6-052b-4590-8224-a36a9cad0a04" />
+  <Project Path="04-Memory/04-Memory.csproj" Id="9c28779c-748d-4a02-80ce-c2a92c39b15f" />
+  <Project Path="05-MCP/05-MCP.csproj" Id="82027b67-81c4-47e9-9638-897f7bf862fb" />
+  <Project Path="06-Workflows/06-Workflows.csproj" Id="99521476-9c7a-4f83-82c3-8cca3e10c5ab" />
+  <Project Path="07-AgentHarness/07-AgentHarness.csproj" Id="0fa58bf3-8eb0-43f1-a9d5-427e3ba68b13" />
+  <Project Path="07-Github-Copilot/08-Agent_With_GitHubCopilot.csproj" />
+</Solution>
